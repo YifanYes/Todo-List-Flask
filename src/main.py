@@ -100,9 +100,18 @@ def add_new_task(id):
 
 #Metodo delete
 
+@app.route('/user', methods=['POST'])
+def delete_user_task():
 
+    task_delete = request.json.get('nick', None)
+    
+    if not (nick):
+        return {'error': 'Missing info'}, 400
 
+    user= Account(nick = nick)
+    user.create()
 
+    return jsonify(user.to_dict()),201
 
 
 
