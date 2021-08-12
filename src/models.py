@@ -1,19 +1,86 @@
+import os
+import sys
+from sqlalchemy import Table, Column, ForeignKey, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from sqlalchemy import exc
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class Account(db.Model):
+    __tablename__ = 'account'
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(80), unique=False, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    nick = db.Column(db.String(250), unique=True,nullable=False)
+    assign_tasks = db.relationship('Task', lazy=True)
+
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f'Account: {self.id}, user: {self.nick}'
 
-    def serialize(self):
+
+    def to_dict(self):
         return {
             "id": self.id,
-            "email": self.email,
-            # do not serialize the password, its a security breach
+            "nick": self.nick,
         }
+
+
+    def create(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @classmethod
+    def get_all(cls):
+        users_list = cls.query.all()
+        return [user.to_dict() for user in users_list]
+
+
+    @classmethod
+    def read_by_id(cls,id):
+        account = cls.query.get(id)
+        return account
+
+
+class Task(db.Model): 
+    __tablename__ = 'task'
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column (db.String(250),nullable=False)
+    status = db.Column (db.Boolean(True), default=False )
+    account_id = db.Column (db.Integer, db.ForeignKey("account.id"))
+
+
+    def __repr__(self):
+        return f'Task {self.id}, from user {self.account_id}'
+    
+
+    def to_dict(self):
+        return{
+            "task_id":self.id,
+            "text":self.label,
+            "status":self.status,
+            "account_id":self.account_id,
+        }
+
+
+    def add_new(self):
+        db.session.add(self)
+        db.session.commit()
+
+
+    @classmethod
+    def get_tasks(cls):
+        tasks = cls.query.all()
+        return [task.to_dict() for task in tasks]
+
+
+    @classmethod
+    def get_task_by_user(cls, id):
+        specific_task_list = cls.query.filter_by(account_id = id)
+        return [element.to_dict() for element in specific_task_list]
+
+
+    def delete_task(position):
+        Task.query.filter_by(id=position).delete()
+        db.session.commit  
