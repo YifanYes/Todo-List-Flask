@@ -4,7 +4,7 @@ from sqlalchemy import Table, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import exc
-
+import json
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -21,6 +21,7 @@ class Account(db.Model):
 
 
     def to_dict(self):
+        print(self.assign_tasks)
         return {
             "id": self.id,
             "nick": self.nick,
@@ -38,9 +39,24 @@ class Account(db.Model):
 
 
     @classmethod
-    def read_by_id(cls,id):
+    def get_by_id(cls,id):
         account = cls.query.get(id)
         return account
+
+    def update(slef, nick):
+        self.nick = nick
+        db.session.commit()
+
+    
+    @classmethod
+    def get_by_nick(cls,nick):
+        account = cls.query.filter_by(nick = nick).one_or_none()
+        return account 
+    
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Task(db.Model): 
@@ -52,15 +68,16 @@ class Task(db.Model):
 
 
     def __repr__(self):
-        return f'Task {self.id}, from user {self.account_id}'
+        return f'Task: {self.id}, label: {self.label}, status: {self.status} from user: {self.account_id}'
     
 
     def to_dict(self):
+        account = Account.get_by_id(self.account_id)
         return{
             "task_id":self.id,
             "text":self.label,
             "status":self.status,
-            "account_id":self.account_id,
+            "account": account.nick
         }
 
 
@@ -77,10 +94,15 @@ class Task(db.Model):
 
     @classmethod
     def get_task_by_user(cls, id):
-        specific_task_list = cls.query.filter_by(account_id = id)
+        specific_task_list = cls.query.filter_by(account_id = id, status =True)
         return [element.to_dict() for element in specific_task_list]
 
 
-    def delete_task(position):
-        Task.query.filter_by(id=position).delete()
-        db.session.commit  
+    @classmethod
+    def get_by_account(cls, id):
+        tasks = cls.query.filter_by(account_id = id, status = True)
+
+
+    def delete(self):
+        self.done = False
+        db.session.commit()
