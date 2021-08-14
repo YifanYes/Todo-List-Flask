@@ -42,6 +42,15 @@ def get_user():
 
     return jsonify({'message': 'No account created'}), 500
 
+
+@app.route('/user/<int:id>', methods=['GET'])
+def get_one_user(id):
+    one_user = Account.get_by_id(id) 
+    if one_user:
+        return jsonify(one_user.to_dict()), 200
+
+    return jsonify({'message': 'No account'}), 500
+
 #Todos los task 
 @app.route('/user/<int:id>/tasks', methods=['GET'])
 def get_task(id):
@@ -100,7 +109,7 @@ def add_new_task(id):
     return jsonify(task)
 
 
-@app.route('/user/<int:id>'. methods = ['DELETE'])
+@app.route('/user/<int:id>', methods = ['DELETE'])
 def delete_account(id):
     account = Account.get_by_id(id)
 
@@ -129,14 +138,12 @@ def update_account_by_id(id):
 #Metodo delete
 @app.route('/user/<int:id>/tasks/<int:position>', methods=['DELETE'])
 def delete_user_task(id, position):
-     
     
-    task_to_delete=Task.get_by_account(id)
-    
+    task_to_delete = Task.get_one_task(position)
+
     if (task_to_delete):
-        print(task_to_delete)
         task_to_delete.delete()
-        return jsonify(task_to_delete), 200
+        return jsonify(task_to_delete.to_dict()), 200
 
     return {'error': 'Access denied'}, 400
     

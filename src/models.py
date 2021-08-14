@@ -99,10 +99,11 @@ class Task(db.Model):
 
 
     @classmethod
-    def get_by_account(cls, id):
-        tasks = cls.query.filter_by(account_id = id, status = True)
+    def get_one_task(cls, position):
+        one_task = cls.query.get(position)
+        return one_task
 
 
     def delete(self):
-        self.done = False
+        db.session.delete(self)
         db.session.commit()
