@@ -75,7 +75,7 @@ class Task(db.Model):
         account = Account.get_by_id(self.account_id)
         return{
             "task_id":self.id,
-            "text":self.label,
+            "label":self.label,
             "status":self.status,
             "account": account.nick
         }
@@ -94,14 +94,14 @@ class Task(db.Model):
 
     @classmethod
     def get_task_by_user(cls, id):
-        specific_task_list = cls.query.filter_by(account_id = id, status =True)
+        specific_task_list = cls.query.filter_by(account_id = id, status =False)
         return [element.to_dict() for element in specific_task_list]
 
 
     @classmethod
     def get_one_task(cls, position):
         one_task = cls.query.get(position)
-        return one_task
+        return one_task.to_dict()
 
 
     def delete(self):
