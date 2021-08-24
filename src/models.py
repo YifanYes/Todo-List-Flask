@@ -43,7 +43,7 @@ class Account(db.Model):
         account = cls.query.get(id)
         return account
 
-    def update(slef, nick):
+    def update(self, nick):
         self.nick = nick
         db.session.commit()
 
